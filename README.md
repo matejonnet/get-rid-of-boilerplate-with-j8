@@ -9,6 +9,8 @@ Get rid of boilerplate code with Java 8
     .collect(listCollector);
 
 .bottom-right[Matej Lazar] 
+???
+
 ---
 
 Agenda
