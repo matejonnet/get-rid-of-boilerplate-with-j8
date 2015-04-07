@@ -9,6 +9,7 @@ Get rid of boilerplate code with Java 8
         .map(pdf -> pdf.thenCompose(pd -> sendEmail(pd)))
         .map(emailF -> emailF.handle((email, e) -> complete(email, e)));
 
+<br />
 Matej Lazar [matejonnet@gmail.com](matejonnet@gmail.com)
 
 ???
@@ -245,7 +246,8 @@ Reduces result to single instance
 CompletableFuture
 =================
 - Reactive programming
-- exception handling with .handle
+- Extending Future
+- Exception handling
 
 ---
 
@@ -259,8 +261,9 @@ Reactive programming
 
 ---
 
-CompletableFuture
-=================
+Extending java.util.concurrent.Future
+=====================================
+
 - Extends Future by adding async support
 - .complete(T value)
 - .completeExceptionally(Throwable ex)
@@ -274,21 +277,24 @@ CompletableFuture
 CompletableFuture :: simple 
 ===========================
 
-    public CompletableFuture<String> ask() {
-        final CompletableFuture<String> future = new CompletableFuture<>();
-        //...
-        return future;
+    CompletableFuture<String> future = new CompletableFuture<>();
+    new Thread(() -> longRunningTask(future)).start();
+
+    //blocks until future.complete is called
+    future.get();
+
+    private void longRunningTask(CompletableFuture<String> future) {
+        //long running operations
+        future.complete("42");
     }
-    
-    future.complete("42")
-    
-Calling complete unblock all clients waiting for get 
-and also call methods that are linked by .then\* methods.     
+
+Calling complete unblocks all clients waiting for get 
+and also calls functions that are referenced by .then\* methods.     
 
 ---
 
-CompletableFuture :: async 
-===========================
+CompletableFuture :: Supplier
+=============================
 
     final CompletableFuture<String> future = 
         CompletableFuture.supplyAsync(new Supplier<String>() {
@@ -311,24 +317,34 @@ CompletableFuture :: async
 CompletableFuture :: acting 
 ===========================
 
-    CompletableFuture<Double> f3 =  future.thenApply(Integer::parseInt)
-                                    .thenApply(r -> r * r * Math.PI);
+    CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> {
+            sleepQuietly();
+            return "42";
+        }, executor);
 
+    future.thenApply(Integer::parseInt)
+          .thenApply(r -> r * r * Math.PI)
+          .thenAccept((p) -> System.out.println("Result :" + p.toString()));
+
+Thread is not blocked when we use .then\* methods. 
 ---
 
 CompletableFuture :: exception handling 
 =======================================
+- Only runtime exceptions can be thrown out of lambda
+- All exceptions must be wrapped in RuntimeException 
+- Main thread completed we cannot catch the exception
+- The most flexible approach is using .handle() 
+- handle() takes a function receiving either correct result or exception
 
-The most flexible approach is using handle() that takes a function receiving either correct result or exception:
- 
-    CompletableFuture<Integer> safe = future.handle((ok, ex) -> {
-        if (ok != null) {
-            return Integer.parseInt(ok);
-        } else {
-            log.warn("Problem", ex);
-            return -1;
-        }
-    });
+
+    future.thenApply(Integer::parseInt)
+          .thenApply(r -> r * r * Math.PI)
+          .thenAccept((p) -> System.out.println("Result :" + p.toString()))
+          .handle((result, ex) -> {
+                if (result != null) storeResult(result);
+                else handleException(ex);
+          });
 
 ---
 
@@ -337,7 +353,7 @@ CompletableFuture :: combining
 
 Combining (chaining) two futures (thenCompose())
 
-    public void reactive(Person person) {
+    public void combining(Person person) {
         fetchDetailsAsync(person)
             .thenCompose(pd -> sendEmail(pd))
             .handle((email, e) -> complete(email, e));
@@ -353,7 +369,7 @@ Combining (chaining) two futures (thenCompose())
 
 
 CompletableFuture :: with stream 
-==========================================
+================================
 
     persons.parallelStream()
         .filter(p -> p.getAge() > 20)
@@ -376,4 +392,4 @@ https://gist.github.com/Unisay/ff1aefdbd840c574395c<br />
 ### Presentation tool used
 https://github.com/gnab/remark/
 
-*Matej Lazar (matejonnet@gmail.com)*
+*Matej Lazar (matejonnet@gmail.com, mlazar@redhat.com)*

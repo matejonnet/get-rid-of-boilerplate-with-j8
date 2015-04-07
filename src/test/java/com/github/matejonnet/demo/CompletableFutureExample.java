@@ -4,6 +4,7 @@ import org.junit.Test;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
@@ -20,19 +21,58 @@ public class CompletableFutureExample {
     Executor executor = Executors.newFixedThreadPool(4);
 
     @Test
-    public void simpleCompletableFuture(Person person) {
+    public void simpleCompletableFuture() throws ExecutionException, InterruptedException {
 
+        final CompletableFuture<String> future = new CompletableFuture<>();
+        new Thread(() -> longRunningTask(future)).start();
+
+        System.out.println("Long running task started         @" + System.currentTimeMillis());
+
+        System.out.println("Waiting for get ...               @" + System.currentTimeMillis());
+
+        future.get();
+        System.out.println("Get: Long running task completed  @" + System.currentTimeMillis());
+    }
+
+    private void longRunningTask(CompletableFuture<String> future) {
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            future.completeExceptionally(e);
+        }
+        future.complete("42");
     }
 
     @Test
-    public void reactive(Person person) {
+    public void completableFutureWithSupplier() throws ExecutionException, InterruptedException {
+
+        final CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> {
+                System.out.println("Long running task started @" + System.currentTimeMillis());
+                sleepQuietly();
+                return "42";
+            }, executor);
+
+        future.thenApply(Integer::parseInt)
+              .thenApply(r -> r * r * Math.PI)
+              .thenAccept((p) -> System.out.println("Result :" + p.toString()))
+              .thenRun(() -> System.out.println("Completed                 @" + System.currentTimeMillis()));
+
+        System.out.println("Waiting for get ...       @" + System.currentTimeMillis());
+
+        sleepQuietly(1500);
+    }
+
+    @Test
+    public void combining() {
+        Person person = new Person("Bob", 25);
+
         fetchDetailsAsync(person)
             .thenCompose(pd -> sendEmail(pd))
             .handle((email, e) -> complete(email, e));
     }
 
     @Test
-    public void reactiveWithStream() {
+    public void combiningOnStream() {
         List<Person> persons = newArrayList(
                 new Person(1, "Bob", 25),
                 new Person(2, "Alex", 20),
@@ -72,6 +112,18 @@ public class CompletableFutureExample {
                 return true;
             }
         }, executor);
+    }
+
+    private void sleepQuietly() {
+        sleepQuietly(1000);
+    }
+
+    private void sleepQuietly(long millis) {
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException e) {
+            throw new ExceptionWrapper(e);
+        }
     }
 
 }
