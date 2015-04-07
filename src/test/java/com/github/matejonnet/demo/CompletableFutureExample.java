@@ -48,13 +48,13 @@ public class CompletableFutureExample {
 
         final CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> {
                 System.out.println("Long running task started @" + System.currentTimeMillis());
-                sleepQuietly();
+                sleepQuietly(1000);
                 return "42";
             }, executor);
 
         future.thenApply(Integer::parseInt)
               .thenApply(r -> r * r * Math.PI)
-              .thenAccept((p) -> System.out.println("Result :" + p.toString()))
+              .thenAccept(p -> System.out.println("Result :" + p.toString()))
               .thenRun(() -> System.out.println("Completed                 @" + System.currentTimeMillis()));
 
         System.out.println("Waiting for get ...       @" + System.currentTimeMillis());

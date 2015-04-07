@@ -26,7 +26,6 @@ public class StreamExamples {
         for (Person person : persons) {
             System.out.println(person.getName());
         }
-
     }
 
     @Test

@@ -34,7 +34,11 @@ public class Person {
 
     @Override
     public String toString() {
-        return name + "(" + age + ")";
+        String ret = name;
+        if (age > 0) {
+            ret += "(" + age + ")";
+        }
+        return ret;
     }
 
     public int getId() {

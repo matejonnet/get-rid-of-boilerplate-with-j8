@@ -5,7 +5,6 @@ import org.junit.Test;
 import java.util.Comparator;
 import java.util.ConcurrentModificationException;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static com.github.matejonnet.demo.Util.newArrayList;
 import static java.util.Comparator.comparing;
@@ -79,8 +78,12 @@ public class LambdaExamples {
      */
     @Test
     public void comparatorExampleJ8HighOrderFunction() {
-        List<String> list = newArrayList("Bob", "Alex", "Cindy", "Bill");
-        List<Person> persons = list.stream().map(n -> new Person(n)).collect(Collectors.toList());
+        List<Person> persons = newArrayList(
+                new Person("Bob"),
+                new Person("Alex"),
+                new Person("Cindy"),
+                new Person("Bill"));
+
         System.out.println(persons);
 
         persons.sort((p1, p2) -> p1.getName().compareTo(p2.getName()));

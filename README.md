@@ -324,7 +324,7 @@ CompletableFuture :: acting
 
     future.thenApply(Integer::parseInt)
           .thenApply(r -> r * r * Math.PI)
-          .thenAccept((p) -> System.out.println("Result :" + p.toString()));
+          .thenAccept(p -> System.out.println("Result :" + p.toString()));
 
 Thread is not blocked when we use .then\* methods. 
 ---
