@@ -57,7 +57,7 @@ public class StreamExamples {
         System.out.println(personNamesOver20);
     }
 
-    Predicate<Person> filterAge(int age) {
+    Predicate<Person> filterAge(Integer age) {
         return (p) -> {
             return p.getAge() > age;
         };
@@ -134,8 +134,17 @@ public class StreamExamples {
                 new Person(3, "Cindy", 20),
                 new Person(4, "Bill", 25));
 
-        Person person = persons.stream().filter(p -> p.getId() == 1).collect(StreamCollectors.singletonCollector());
+        Person person = persons.stream()
+                .filter(p -> p.getId() == 1)
+                .collect(StreamCollectors.singletonCollector());
+
+        Person person2 = persons.stream()
+                .filter(p -> p.getId() == 2)
+                .findFirst()
+                .orElse(null);
+
         System.out.println(person);
+        System.out.println(person2);
     }
 
     @Test

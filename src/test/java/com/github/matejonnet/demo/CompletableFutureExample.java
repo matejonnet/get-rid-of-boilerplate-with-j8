@@ -5,8 +5,9 @@ import org.junit.Test;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import static com.github.matejonnet.demo.Util.newArrayList;
 
@@ -18,7 +19,7 @@ import static com.github.matejonnet.demo.Util.newArrayList;
  */
 public class CompletableFutureExample {
 
-    Executor executor = Executors.newFixedThreadPool(4);
+    ExecutorService executor = Executors.newFixedThreadPool(4);
 
     @Test
     public void simpleCompletableFuture() throws ExecutionException, InterruptedException {
@@ -59,7 +60,8 @@ public class CompletableFutureExample {
 
         System.out.println("Waiting for get ...       @" + System.currentTimeMillis());
 
-        sleepQuietly(1500);
+        executor.shutdown();
+        executor.awaitTermination(2, TimeUnit.SECONDS);
     }
 
     @Test
